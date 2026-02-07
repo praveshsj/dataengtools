@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Databricks Cost Calculator | DataEngTools</title>
+    <meta name="description" content="Free Databricks cost calculator for AWS. Estimate your monthly costs, compare cluster types, and optimize your spending. Built for data engineers in India.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Archivo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">
+        <svg class="sun-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <circle cx="10" cy="10" r="4" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M10 2V4M10 16V18M18 10H16M4 10H2M15.657 4.343L14.243 5.757M5.757 14.243L4.343 15.657M15.657 15.657L14.243 14.243M5.757 5.757L4.343 4.343" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <svg class="moon-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+    </div>
+
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo-section">
+                    <h1 class="logo">DataEngTools</h1>
+                    <span class="tagline">Cost Optimization Suite</span>
+                </div>
+                <nav class="nav">
+                    <a href="#calculator" class="nav-link active">Calculator</a>
+                    <a href="#comparison" class="nav-link">Compare</a>
+                    <a href="#tips" class="nav-link">Optimize</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <section class="hero">
+            <div class="container">
+                <div class="hero-grid">
+                    <div class="hero-content">
+                        <div class="badge">AWS Mumbai Region</div>
+                        <h2 class="hero-title">Databricks Cost Calculator</h2>
+                        <p class="hero-subtitle">Estimate your monthly Databricks costs with precision. Compare cluster types, optimize spend, and make informed decisions for your data infrastructure.</p>
+                        <div class="stats-row">
+                            <div class="stat">
+                                <div class="stat-value">₹</div>
+                                <div class="stat-label">INR Pricing</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-value">3</div>
+                                <div class="stat-label">Cluster Types</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-value">10+</div>
+                                <div class="stat-label">Instance Types</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="hero-visual">
+                        <div class="cost-preview-card">
+                            <div class="cost-preview-header">Estimated Monthly Cost</div>
+                            <div class="cost-preview-amount" id="heroEstimate">₹0</div>
+                            <div class="cost-preview-subtext">Configure calculator below</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="calculator" class="calculator-section">
+            <div class="container">
+                <div class="calculator-grid">
+                    <div class="calculator-panel">
+                        <h3 class="panel-title">Configuration</h3>
+                        
+                        <div class="form-group">
+                            <label class="form-label">
+                                Databricks Edition
+                                <span class="tooltip-trigger">ⓘ
+                                    <span class="tooltip-content">Standard: Basic features | Premium: RBAC, audit logs | Enterprise: Advanced security</span>
+                                </span>
+                            </label>
+                            <div class="button-group">
+                                <button class="btn-option active" data-edition="standard" data-dbu-multiplier="1">Standard</button>
+                                <button class="btn-option" data-edition="premium" data-dbu-multiplier="1.57">Premium</button>
+                                <button class="btn-option" data-edition="enterprise" data-dbu-multiplier="2.29">Enterprise</button>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                Cluster Type
+                                <span class="tooltip-trigger">ⓘ
+                                    <span class="tooltip-content">Jobs: Scheduled workloads | All-Purpose: Interactive development | SQL: Analytics queries</span>
+                                </span>
+                            </label>
+                            <select class="form-select" id="clusterType">
+                                <option value="jobs" data-dbu-rate="0.15">Jobs Compute (0.15 DBU/hour)</option>
+                                <option value="all-purpose" data-dbu-rate="0.40">All-Purpose Compute (0.40 DBU/hour)</option>
+                                <option value="sql" data-dbu-rate="0.22">SQL Compute (0.22 DBU/hour)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Instance Type</label>
+                            <select class="form-select" id="instanceType">
+                                <optgroup label="General Purpose">
+                                    <option value="m5.large" data-vcpu="2" data-memory="8" data-cost="0.096">m5.large - 2 vCPU, 8GB RAM (₹0.096/hr)</option>
+                                    <option value="m5.xlarge" data-vcpu="4" data-memory="16" data-cost="0.192">m5.xlarge - 4 vCPU, 16GB RAM (₹0.192/hr)</option>
+                                    <option value="m5.2xlarge" data-vcpu="8" data-memory="32" data-cost="0.384" selected>m5.2xlarge - 8 vCPU, 32GB RAM (₹0.384/hr)</option>
+                                    <option value="m5.4xlarge" data-vcpu="16" data-memory="64" data-cost="0.768">m5.4xlarge - 16 vCPU, 64GB RAM (₹0.768/hr)</option>
+                                </optgroup>
+                                <optgroup label="Compute Optimized">
+                                    <option value="c5.2xlarge" data-vcpu="8" data-memory="16" data-cost="0.340">c5.2xlarge - 8 vCPU, 16GB RAM (₹0.340/hr)</option>
+                                    <option value="c5.4xlarge" data-vcpu="16" data-memory="32" data-cost="0.680">c5.4xlarge - 16 vCPU, 32GB RAM (₹0.680/hr)</option>
+                                </optgroup>
+                                <optgroup label="Memory Optimized">
+                                    <option value="r5.2xlarge" data-vcpu="8" data-memory="64" data-cost="0.504">r5.2xlarge - 8 vCPU, 64GB RAM (₹0.504/hr)</option>
+                                    <option value="r5.4xlarge" data-vcpu="16" data-memory="128" data-cost="1.008">r5.4xlarge - 16 vCPU, 128GB RAM (₹1.008/hr)</option>
+                                </optgroup>
+                                <optgroup label="Storage Optimized">
+                                    <option value="i3.2xlarge" data-vcpu="8" data-memory="61" data-cost="0.624">i3.2xlarge - 8 vCPU, 61GB RAM (₹0.624/hr)</option>
+                                </optgroup>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                Number of Worker Nodes
+                                <span class="value-display" id="nodeCountDisplay">4</span>
+                            </label>
+                            <input type="range" class="form-range" id="nodeCount" min="2" max="20" value="4" step="1">
+                            <div class="range-labels">
+                                <span>2</span>
+                                <span>20</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                Hours per Day
+                                <span class="value-display" id="hoursDisplay">8</span>
+                            </label>
+                            <input type="range" class="form-range" id="hoursPerDay" min="1" max="24" value="8" step="0.5">
+                            <div class="range-labels">
+                                <span>1h</span>
+                                <span>24h</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                Days per Month
+                                <span class="value-display" id="daysDisplay">22</span>
+                            </label>
+                            <input type="range" class="form-range" id="daysPerMonth" min="1" max="31" value="22" step="1">
+                            <div class="range-labels">
+                                <span>1</span>
+                                <span>31</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                Storage (TB)
+                                <span class="value-display" id="storageDisplay">1.0</span>
+                            </label>
+                            <input type="range" class="form-range" id="storage" min="0" max="50" value="1" step="0.5">
+                            <div class="range-labels">
+                                <span>0 TB</span>
+                                <span>50 TB</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="spotInstances" class="form-checkbox">
+                                <span>Use Spot Instances (60-90% savings)</span>
+                            </label>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="autoscaling" class="form-checkbox">
+                                <span>Enable Autoscaling (Est. 30% savings)</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="results-panel">
+                        <div class="results-card primary-card">
+                            <div class="results-header">
+                                <h3>Total Monthly Cost</h3>
+                                <div class="cost-breakdown-toggle" id="breakdownToggle">
+                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                        <path d="M2 6L8 12L14 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                    </svg>
+                                    Details
+                                </div>
+                            </div>
+                            <div class="total-cost" id="totalCost">₹0</div>
+                            <div class="cost-subtext" id="costSubtext">Configure your cluster settings</div>
+                            
+                            <div class="cost-breakdown" id="costBreakdown">
+                                <div class="breakdown-item">
+                                    <span class="breakdown-label">DBU Cost</span>
+                                    <span class="breakdown-value" id="dbuCost">₹0</span>
+                                </div>
+                                <div class="breakdown-item">
+                                    <span class="breakdown-label">Compute (EC2)</span>
+                                    <span class="breakdown-value" id="computeCost">₹0</span>
+                                </div>
+                                <div class="breakdown-item">
+                                    <span class="breakdown-label">Storage</span>
+                                    <span class="breakdown-value" id="storageCost">₹0</span>
+                                </div>
+                                <div class="breakdown-divider"></div>
+                                <div class="breakdown-item highlight">
+                                    <span class="breakdown-label">Monthly Total</span>
+                                    <span class="breakdown-value" id="monthlyTotal">₹0</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="results-card">
+                            <h4 class="card-title">Cost Distribution</h4>
+                            <div class="chart-container">
+                                <canvas id="costChart"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="results-card">
+                            <h4 class="card-title">Hourly Breakdown</h4>
+                            <div class="hourly-stats">
+                                <div class="hourly-stat">
+                                    <div class="hourly-label">Cost per Hour</div>
+                                    <div class="hourly-value" id="costPerHour">₹0</div>
+                                </div>
+                                <div class="hourly-stat">
+                                    <div class="hourly-label">Total Monthly Hours</div>
+                                    <div class="hourly-value" id="totalHours">0h</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="comparison" class="comparison-section">
+            <div class="container">
+                <h3 class="section-title">Cluster Type Comparison</h3>
+                <p class="section-subtitle">See how different cluster types affect your monthly costs</p>
+                
+                <div class="comparison-grid" id="comparisonGrid">
+                    <!-- Generated by JavaScript -->
+                </div>
+            </div>
+        </section>
+
+        <section id="tips" class="tips-section">
+            <div class="container">
+                <h3 class="section-title">Cost Optimization Tips</h3>
+                
+                <div class="tips-grid">
+                    <div class="tip-card">
+                        <div class="tip-icon">💰</div>
+                        <h4 class="tip-title">Use Spot Instances</h4>
+                        <p class="tip-description">Save 60-90% on compute costs by using spot instances for fault-tolerant workloads. Perfect for batch jobs and data processing.</p>
+                        <div class="tip-savings">Potential savings: 60-90%</div>
+                    </div>
+
+                    <div class="tip-card">
+                        <div class="tip-icon">⚡</div>
+                        <h4 class="tip-title">Enable Autoscaling</h4>
+                        <p class="tip-description">Automatically scale cluster size based on workload. Reduces idle time and optimizes resource usage during peak hours.</p>
+                        <div class="tip-savings">Potential savings: 20-40%</div>
+                    </div>
+
+                    <div class="tip-card">
+                        <div class="tip-icon">🎯</div>
+                        <h4 class="tip-title">Right-size Your Clusters</h4>
+                        <p class="tip-description">Use Jobs Compute for scheduled workloads instead of All-Purpose. Jobs clusters are 62% cheaper per DBU.</p>
+                        <div class="tip-savings">Potential savings: 62%</div>
+                    </div>
+
+                    <div class="tip-card">
+                        <div class="tip-icon">⏱️</div>
+                        <h4 class="tip-title">Set Auto-termination</h4>
+                        <p class="tip-description">Configure clusters to auto-terminate after inactivity. Prevents paying for idle clusters that developers forget to shut down.</p>
+                        <div class="tip-savings">Potential savings: 30-50%</div>
+                    </div>
+
+                    <div class="tip-card">
+                        <div class="tip-icon">📊</div>
+                        <h4 class="tip-title">Monitor DBU Usage</h4>
+                        <p class="tip-description">Track DBU consumption patterns. Identify inefficient queries and jobs that consume excessive resources.</p>
+                        <div class="tip-savings">Ongoing optimization</div>
+                    </div>
+
+                    <div class="tip-card">
+                        <div class="tip-icon">🔄</div>
+                        <h4 class="tip-title">Use Instance Pools</h4>
+                        <p class="tip-description">Pre-allocate instances to reduce cluster startup time. Reuse instances across jobs to minimize cloud provider boot overhead.</p>
+                        <div class="tip-savings">Faster startup + savings</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3 class="footer-title">DataEngTools</h3>
+                    <p class="footer-description">Free tools for data engineers. Built by engineers, for engineers.</p>
+                </div>
+                <div class="footer-section">
+                    <h4 class="footer-heading">Tools</h4>
+                    <ul class="footer-links">
+                        <li><a href="#calculator">Databricks Calculator</a></li>
+                        <li><a href="#" class="coming-soon">SQL Formatter <span class="badge-small">Soon</span></a></li>
+                        <li><a href="#" class="coming-soon">Cron Generator <span class="badge-small">Soon</span></a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4 class="footer-heading">Resources</h4>
+                    <ul class="footer-links">
+                        <li><a href="#tips">Optimization Tips</a></li>
+                        <li><a href="#comparison">Cost Comparison</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4 class="footer-heading">Contact</h4>
+                    <p class="footer-email">praveshsundriyal@dataengtools.com</p>
+                    <p class="footer-note">Questions, feedback, or suggestions? Reach out anytime.</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 DataEngTools. Free tools for the data engineering community.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
